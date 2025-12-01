@@ -1,0 +1,5 @@
+{
+  "name": "Chrono Slots",
+  "description": "A cyberpunk time-travel slot machine with dynamic phases (Calm, Surge, Quantum) and iframe messaging protocol.",
+  "requestFramePermissions": []
+}

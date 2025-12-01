@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Chrono Slots</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --font-display: 'Orbitron', sans-serif;
+        --font-body: 'Rajdhani', sans-serif;
+        
+        /* Neon Color Palette - Matching Image */
+        --neon-cyan: #00f0ff;
+        --neon-cyan-bright: #00ffff;
+        --neon-cyan-dark: #00a0b0;
+        --neon-pink: #ff00ff;
+        --neon-pink-bright: #ff33ff;
+        --neon-purple: #cc00ff;
+        --neon-purple-bright: #dd33ff;
+        --neon-blue: #0066ff;
+        --neon-glow-intensity: 0.8;
+      }
+      body {
+        font-family: var(--font-body);
+        background-color: #000;
+        margin: 0;
+        padding: 0;
+      }
+      
+      /* CRT Scanline Effect */
+      .scanlines {
+        background: linear-gradient(
+          to bottom,
+          rgba(255,255,255,0),
+          rgba(255,255,255,0) 50%,
+          rgba(0,0,0,0.2) 50%,
+          rgba(0,0,0,0.2)
+        );
+        background-size: 100% 4px;
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 50;
+        pointer-events: none;
+      }
+
+      /* 3D Cabinet Perspective */
+      .cabinet-perspective {
+        perspective: 1200px;
+        transform-style: preserve-3d;
+      }
+
+      /* Global 3D Enhancements */
+      * {
+        transform-style: preserve-3d;
+      }
+
+      /* Enhanced 3D Depth for Interactive Elements */
+      .transform-style-preserve-3d {
+        transform-style: preserve-3d;
+      }
+
+      /* 3D Shadow Layers */
+      .shadow-3d {
+        box-shadow: 
+          0 4px 12px rgba(0,0,0,0.4),
+          0 8px 24px rgba(0,0,0,0.3),
+          inset 0 1px 2px rgba(255,255,255,0.1);
+      }
+
+      /* Depth Indicator */
+      .depth-indicator {
+        background: linear-gradient(to bottom, 
+          rgba(255,255,255,0.1) 0%,
+          transparent 50%,
+          rgba(0,0,0,0.2) 100%);
+      }
+
+      /* Animal Animations */
+      @keyframes breathe {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      .animate-breathe {
+        animation: breathe 3s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
+      .animate-float {
+        animation: float 4s ease-in-out infinite;
+      }
+
+      @keyframes blink {
+        0%, 96%, 100% { transform: scaleY(1); }
+        98% { transform: scaleY(0.1); }
+      }
+      .animate-blink {
+        transform-origin: center;
+        animation: blink 4s infinite;
+      }
+
+      @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .animate-spin-slow {
+        animation: spin-slow 12s linear infinite;
+      }
+
+      /* Spin Blur Loop: Moves from 0% to -33.33% (one segment height) rapidly */
+      /* Assuming container is 300% height with 3 segments */
+      @keyframes spin-blur { 
+        0% { transform: translateY(0); } 
+        100% { transform: translateY(-33.33%); } 
+      }
+      .animate-spin-blur {
+        animation: spin-blur 0.1s linear infinite;
+      }
+      
+      /* Neon Text Effects */
+      .neon-text {
+        text-shadow: 
+          0 0 5px currentColor, 
+          0 0 10px currentColor,
+          0 0 20px currentColor,
+          0 0 40px currentColor;
+      }
+
+      .neon-text-cyan {
+        color: var(--neon-cyan);
+        text-shadow: 
+          0 0 5px var(--neon-cyan),
+          0 0 10px var(--neon-cyan),
+          0 0 20px var(--neon-cyan),
+          0 0 40px var(--neon-cyan),
+          0 0 60px var(--neon-cyan);
+        animation: neon-pulse 2s ease-in-out infinite alternate;
+      }
+
+      /* Neon Border Effects */
+      .neon-border-cyan {
+        border: 2px solid var(--neon-cyan);
+        box-shadow: 
+          0 0 5px var(--neon-cyan),
+          0 0 10px var(--neon-cyan),
+          0 0 15px var(--neon-cyan),
+          0 0 20px var(--neon-cyan),
+          inset 0 0 10px var(--neon-cyan);
+        animation: neon-border-pulse 2s ease-in-out infinite alternate;
+      }
+
+      .neon-border-pink {
+        border: 2px solid var(--neon-pink);
+        box-shadow: 
+          0 0 5px var(--neon-pink),
+          0 0 10px var(--neon-pink),
+          0 0 15px var(--neon-pink),
+          0 0 20px var(--neon-pink),
+          inset 0 0 10px var(--neon-pink);
+      }
+
+      .neon-border-purple {
+        border: 2px solid var(--neon-purple);
+        box-shadow: 
+          0 0 5px var(--neon-purple),
+          0 0 10px var(--neon-purple),
+          0 0 15px var(--neon-purple),
+          0 0 20px var(--neon-purple),
+          inset 0 0 10px var(--neon-purple);
+      }
+
+      /* Neon Glow Animations */
+      @keyframes neon-pulse {
+        0% {
+          text-shadow: 
+            0 0 5px currentColor,
+            0 0 10px currentColor,
+            0 0 20px currentColor,
+            0 0 40px currentColor,
+            0 0 60px currentColor;
+          opacity: 1;
+        }
+        100% {
+          text-shadow: 
+            0 0 2px currentColor,
+            0 0 5px currentColor,
+            0 0 10px currentColor,
+            0 0 20px currentColor,
+            0 0 40px currentColor;
+          opacity: 0.8;
+        }
+      }
+
+      @keyframes neon-border-pulse {
+        0% {
+          box-shadow: 
+            0 0 5px var(--neon-cyan),
+            0 0 10px var(--neon-cyan),
+            0 0 15px var(--neon-cyan),
+            0 0 20px var(--neon-cyan),
+            inset 0 0 10px var(--neon-cyan);
+          border-color: var(--neon-cyan-bright);
+        }
+        100% {
+          box-shadow: 
+            0 0 2px var(--neon-cyan),
+            0 0 5px var(--neon-cyan),
+            0 0 10px var(--neon-cyan),
+            0 0 15px var(--neon-cyan),
+            inset 0 0 5px var(--neon-cyan);
+          border-color: var(--neon-cyan-dark);
+        }
+      }
+
+      @keyframes neon-glow {
+        0%, 100% {
+          filter: drop-shadow(0 0 5px currentColor) drop-shadow(0 0 10px currentColor) drop-shadow(0 0 20px currentColor);
+        }
+        50% {
+          filter: drop-shadow(0 0 2px currentColor) drop-shadow(0 0 5px currentColor) drop-shadow(0 0 10px currentColor);
+        }
+      }
+
+      /* Glowing Grid Background */
+      .neon-grid {
+        background-image: 
+          linear-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 240, 255, 0.1) 1px, transparent 1px);
+        background-size: 50px 50px;
+        box-shadow: 
+          inset 0 0 100px rgba(0, 240, 255, 0.05),
+          0 0 200px rgba(0, 240, 255, 0.1);
+      }
+
+      /* Neon Button Glow */
+      .neon-button-cyan {
+        background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 160, 176, 0.2));
+        border: 2px solid var(--neon-cyan);
+        box-shadow: 
+          0 0 10px var(--neon-cyan),
+          0 0 20px var(--neon-cyan),
+          0 0 30px var(--neon-cyan),
+          inset 0 0 15px rgba(0, 240, 255, 0.2);
+        color: var(--neon-cyan);
+        text-shadow: 0 0 10px var(--neon-cyan);
+      }
+
+      .neon-button-pink {
+        background: linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(204, 0, 204, 0.2));
+        border: 2px solid var(--neon-pink);
+        box-shadow: 
+          0 0 10px var(--neon-pink),
+          0 0 20px var(--neon-pink),
+          0 0 30px var(--neon-pink),
+          inset 0 0 15px rgba(255, 0, 255, 0.2);
+        color: var(--neon-pink);
+        text-shadow: 0 0 10px var(--neon-pink);
+      }
+
+      .neon-button-purple {
+        background: linear-gradient(135deg, rgba(204, 0, 255, 0.2), rgba(153, 0, 204, 0.2));
+        border: 2px solid var(--neon-purple);
+        box-shadow: 
+          0 0 10px var(--neon-purple),
+          0 0 20px var(--neon-purple),
+          0 0 30px var(--neon-purple),
+          inset 0 0 15px rgba(204, 0, 255, 0.2);
+        color: var(--neon-purple);
+        text-shadow: 0 0 10px var(--neon-purple);
+      }
+
+      /* Particle Background */
+      .particle {
+        position: absolute;
+        border-radius: 50%;
+        animation: float-particle linear infinite;
+      }
+      @keyframes float-particle {
+        from { transform: translateY(0) translateX(0); opacity: 0; }
+        10% { opacity: 0.8; }
+        90% { opacity: 0.8; }
+        to { transform: translateY(-100px) translateX(20px); opacity: 0; }
+      }
+
+      @keyframes grid-scroll {
+        from { background-position: 0 0, 0 0, 0 0, 0 0; }
+        to { background-position: 100px 0, 100px 0, 20px 0, 20px 0; }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^11.0.28"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-black text-white min-h-[100dvh]">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
