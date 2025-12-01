@@ -1,6 +1,5 @@
-
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
 interface Props {
   amount: number;
@@ -10,229 +9,154 @@ interface Props {
 
 const BigWinOverlay: React.FC<Props> = ({ amount, onComplete, isBigWin }) => {
   const [displayAmount, setDisplayAmount] = useState(0);
+  const completedRef = useRef(false);
+  const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    let start = 0;
-    const duration = isBigWin ? 2000 : 1000;
+    const countDuration = isBigWin ? 2000 : 1000;
+    const extraVisible = isBigWin ? 2000 : 1000;
     const startTime = Date.now();
+
+    completedRef.current = false;
 
     const tick = () => {
       const now = Date.now();
-      const progress = Math.min((now - startTime) / duration, 1);
+      const progress = Math.min((now - startTime) / countDuration, 1);
       const ease = 1 - Math.pow(1 - progress, 4);
-      
+
       setDisplayAmount(amount * ease);
 
       if (progress < 1) {
         requestAnimationFrame(tick);
-      } else {
-        setTimeout(onComplete, isBigWin ? 1500 : 500); 
+      } else if (!completedRef.current) {
+        completedRef.current = true;
+        timeoutRef.current = window.setTimeout(() => {
+          onComplete();
+        }, extraVisible);
       }
     };
-    
-    tick();
-  }, [amount, onComplete, isBigWin]);
 
-  // Different styles for Big Win vs Regular Win
-  const title = isBigWin ? "BIG WIN!" : "WINNER!";
-  const titleLetters = title.split('');
-  const gradient = isBigWin 
-    ? "from-yellow-300 via-orange-500 to-red-600"
-    : "from-green-300 via-emerald-500 to-teal-600";
-  const glow = isBigWin ? "rgba(251,191,36,0.8)" : "rgba(52,211,153,0.8)";
+    tick();
+
+    return () => {
+      completedRef.current = true;
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [amount, onComplete, isBigWin]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        duration: 0.3,
-        staggerChildren: 0.1,
-      },
+      transition: { duration: 0.4, when: 'beforeChildren' as const, staggerChildren: 0.05 },
     },
-    exit: {
-      opacity: 0,
-      scale: 1.2,
-      transition: { duration: 0.3 },
-    },
+    exit: { opacity: 0, transition: { duration: 0.2 } },
   };
 
   const letterVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 50, 
-      rotateX: -90,
-      scale: 0.5,
-    },
-    visible: { 
-      opacity: 1, 
+    hidden: { opacity: 0, y: 50, scale: 0.5 },
+    visible: {
+      opacity: 1,
       y: 0,
-      rotateX: 0,
       scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 20,
-      },
+      transition: { type: 'spring', stiffness: 300, damping: 20 },
     },
   };
 
   const amountVariants = {
-    hidden: { scale: 0, rotate: -180, opacity: 0 },
+    hidden: { scale: 0.6, opacity: 0 },
     visible: {
       scale: 1,
-      rotate: 0,
       opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 200,
-        damping: 15,
-        delay: 0.3,
-      },
+      transition: { type: 'spring', stiffness: 200, damping: 15, delay: 0.2 },
     },
   };
 
+  const titleText = isBigWin ? 'BIG WIN!' : 'WINNER!';
+  const titleSize = isBigWin ? '5rem' : '3.5rem';
+  const gradientColors = isBigWin
+    ? { start: '#fde047', middle: '#f59e0b', end: '#dc2626' }
+    : { start: '#86efac', middle: '#10b981', end: '#059669' };
+  const glowColor = isBigWin ? 'rgba(251,191,36,0.9)' : 'rgba(52,211,153,0.9)';
+
   return (
-    <motion.div 
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      variants={containerVariants}
-      className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: 'auto',
+      }}
     >
-      <motion.div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-[4px]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      />
-      
-      {isBigWin && (
-        <div className="absolute inset-0 overflow-hidden">
-           {Array.from({ length: 30 }).map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute top-1/2 left-1/2 w-3 h-3 bg-yellow-400 rounded-full"
-                initial={{ 
-                  x: 0, 
-                  y: 0, 
-                  scale: 0,
-                  opacity: 1,
-                }}
-                animate={{
-                  x: Math.cos((i * 360 / 30) * Math.PI / 180) * 300,
-                  y: Math.sin((i * 360 / 30) * Math.PI / 180) * 300,
-                  scale: [0, 1, 0.5, 0],
-                  opacity: [1, 1, 0.5, 0],
-                  rotate: 360,
-                }}
-                transition={{
-                  duration: 1.5,
-                  delay: i * 0.05,
-                  ease: "easeOut",
-                }}
-              />
-           ))}
-        </div>
-      )}
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={containerVariants}
+        style={{
+          textAlign: 'center',
+          padding: '3rem',
+          borderRadius: '12px',
+          maxWidth: '90%',
+          width: '600px',
+          color: 'white',
+        }}
+      >
+        {/* Title */}
+        <motion.div style={{ marginBottom: '2rem', whiteSpace: 'nowrap' }}>
+          {titleText.split('').map((letter, i) => (
+            <motion.span
+              key={i}
+              variants={letterVariants}
+              style={{
+                display: 'inline-block',
+                fontSize: titleSize,
+                fontWeight: 900,
+                fontStyle: 'italic',
+                color: isBigWin ? gradientColors.middle : gradientColors.start,
+                textShadow: `
+                  0 0 10px ${glowColor},
+                  0 0 30px ${glowColor},
+                  0 0 60px ${glowColor}
+                `,
+                margin: '0 2px',
+              }}
+            >
+              {letter === ' ' ? '\u00A0' : letter}
+            </motion.span>
+          ))}
+        </motion.div>
 
-      <div className="relative z-10 flex flex-col items-center text-center p-8 max-w-4xl w-full">
-         <motion.h1 
-           className={`font-black italic text-transparent bg-clip-text bg-gradient-to-b ${gradient} drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] filter flex`}
-           style={{ 
-             fontSize: isBigWin ? '5rem' : '3rem',
-             textShadow: `0 0 30px ${glow}`,
-             perspective: '1000px',
-           }}
-           variants={{
-             hidden: { opacity: 0 },
-             visible: {
-               opacity: 1,
-              transition: {
-                staggerChildren: 0.05,
-              },
-            },
+        {/* Win Amount */}
+        <motion.div
+          variants={amountVariants}
+          style={{
+            fontSize: '3rem',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            margin: '1rem 0',
+            textShadow: `
+              0 0 10px ${glowColor},
+              0 0 30px ${glowColor},
+              0 0 60px rgba(255,255,255,0.9)
+            `,
+            background: 'rgba(255, 255, 255, 0.06)',
+            padding: '1rem 2rem',
+            borderRadius: '12px',
+            border: `2px solid ${gradientColors.middle}`,
+            backdropFilter: 'blur(8px)',
           }}
-         >
-           {titleLetters.map((letter, i) => (
-             <motion.span
-               key={i}
-               variants={letterVariants}
-               style={{
-                 display: 'inline-block',
-                 transformStyle: 'preserve-3d',
-               }}
-               whileHover={{
-                 scale: 1.2,
-                 y: -10,
-                 transition: { type: "spring", stiffness: 400 },
-               }}
-             >
-               {letter === ' ' ? '\u00A0' : letter}
-             </motion.span>
-           ))}
-         </motion.h1>
-         
-         <motion.div
-           variants={amountVariants}
-           className="mt-4 font-mono font-bold text-white drop-shadow-md relative"
-           style={{ fontSize: isBigWin ? '4rem' : '2.5rem' }}
-           animate={{
-             scale: isBigWin ? [1, 1.1, 1] : 1,
-           }}
-           transition={{
-             duration: 0.5,
-             repeat: isBigWin ? Infinity : 0,
-             repeatType: "reverse",
-             repeatDelay: 0.5,
-           }}
-         >
-           <motion.span
-             initial={{ opacity: 0, x: -20 }}
-             animate={{ opacity: 1, x: 0 }}
-             transition={{ delay: 0.5 }}
-           >
-             $
-           </motion.span>
-           <motion.span
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-             transition={{ delay: 0.6 }}
-           >
-             {displayAmount.toFixed(2)}
-           </motion.span>
-         </motion.div>
-
-         {/* Pulsing rings for big wins */}
-         {isBigWin && (
-           <>
-             {[0, 1, 2].map((i) => (
-               <motion.div
-                 key={i}
-                 className="absolute top-1/2 left-1/2 border-4 border-yellow-400 rounded-full"
-                 style={{
-                   width: 200 + i * 150,
-                   height: 200 + i * 150,
-                   x: '-50%',
-                   y: '-50%',
-                 }}
-                 initial={{ scale: 0, opacity: 0.8 }}
-                 animate={{
-                   scale: [0, 2, 2.5],
-                   opacity: [0.8, 0.4, 0],
-                 }}
-                 transition={{
-                   duration: 2,
-                   delay: i * 0.3,
-                   repeat: Infinity,
-                   ease: "easeOut",
-                 }}
-               />
-             ))}
-           </>
-         )}
-      </div>
-    </motion.div>
+        >
+          ${displayAmount.toFixed(2)}
+        </motion.div>
+      </motion.div>
+    </div>
   );
 };
 

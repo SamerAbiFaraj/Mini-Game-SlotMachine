@@ -12,9 +12,6 @@ let spinNoise: AudioBufferSourceNode | null = null;
 let spinTickInterval: NodeJS.Timeout | null = null;
 let spinWheelBuffer: AudioBuffer | null = null;
 let isSpinWheelLoaded = false;
-let bigWinBuffer: AudioBuffer | null = null;
-let isBigWinLoaded = false;
-
 
 // Initialize audio context
 export const initAudio = () => {
@@ -62,14 +59,12 @@ const ensureAudioInitialized = () => {
 // Initialize audio system when the first sound needs to play
 export const initAudioSystem = () => {
   if (typeof window === 'undefined') return;
-
+  
   if (!audioCtx) {
     initAudio();
     loadSpinWheelSound().catch(console.error);
-    loadBigWinSound().catch(console.error); // NEW
   }
 };
-
 
 // Initialize on window load
 if (typeof window !== 'undefined') {
@@ -180,40 +175,6 @@ export const playAmbience = (phase: 'Calm' | 'Surge' | 'Quantum') => {
   ambienceOsc = osc;
   ambienceGain = gain;
   ambienceLFO = lfo;
-};
-
-export const loadBigWinSound = async () => {
-  if (!audioCtx) {
-    console.warn('loadBigWinSound: no audioCtx yet');
-    return;
-  }
-
-  try {
-    console.log('Loading BigWinSFX.wav...');
-    const response = await fetch('/BigWinSFX.wav');
-    console.log('BigWinSFX response status:', response.status);
-    const arrayBuffer = await response.arrayBuffer();
-    if (audioCtx) {
-      bigWinBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      isBigWinLoaded = true;
-      console.log('BigWinSFX decoded and ready');
-    }
-  } catch (error) {
-    console.error('Error loading big win sound:', error);
-    isBigWinLoaded = false;
-  }
-  return isBigWinLoaded;
-};
-
-export const resumeAudioIfNeeded = async () => {
-  if (audioCtx && audioCtx.state === 'suspended') {
-    try {
-      await audioCtx.resume();
-      console.log('AudioContext resumed');
-    } catch (e) {
-      console.warn('Error resuming AudioContext:', e);
-    }
-  }
 };
 
 const startSpinTicks = () => {
@@ -390,9 +351,10 @@ export const stopSpinSound = () => {
     spinPanLFOGain = null;
     spinMainPanner = null;
     spinMasterFilter = null;
-  }, fadeOutTime * 1000);
+  }
 };
 
+// Play sound when a reel stops
 export const playReelStop = (isLastReel = false) => {
   if (!audioCtx || !masterGain) {
     console.warn('Audio context or master gain not initialized');
@@ -589,71 +551,44 @@ export function playWin(amount: number) {
 };
 
 export function playBigWin(amount: number) {
-  if (!audioCtx || !masterGain) {
-    console.warn('playBigWin: no audioCtx/masterGain');
-    return;
-  }
-
-  console.log('playBigWin called with amount:', amount, 'isBigWinLoaded:', isBigWinLoaded);
-
+  if (!audioCtx || !masterGain) return;
+  
   try {
     const now = audioCtx.currentTime;
-
-    if (isBigWinLoaded && bigWinBuffer) {
-      console.log('Playing BigWinSFX.wav');
-      const src = audioCtx.createBufferSource();
-      src.buffer = bigWinBuffer;
-
-      const gain = audioCtx.createGain();
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.9, now + 0.05);
-      gain.gain.linearRampToValueAtTime(0.0, now + 6.0);
-
-      src.connect(gain).connect(masterGain!);
-      src.start(now);
-      src.stop(now + 6.2);
-
-      setTimeout(() => {
-        try {
-          src.disconnect();
-          gain.disconnect();
-        } catch (e) {
-          console.warn('Error cleaning up big win buffer source:', e);
-        }
-      }, 6500);
-
-      return;
-    }
-
-    console.log('BigWinSFX not loaded, falling back to synth');
-
-    // Fallback: existing synthesized big win if WAV not available
+    
+    // Create multiple oscillators for a richer sound
     const osc1 = audioCtx.createOscillator();
     const osc2 = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-
+    
+    // First oscillator - main tone
     osc1.type = 'sine';
     osc1.frequency.setValueAtTime(440, now);
     osc1.frequency.exponentialRampToValueAtTime(880, now + 0.5);
-
+    
+    // Second oscillator - octave higher
     osc2.type = 'sine';
     osc2.frequency.setValueAtTime(880, now);
     osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.5);
-
+    
+    // Gain envelope
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(0.2, now + 0.1);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
-
+    
+    // Connect and start
     osc1.connect(gain);
     osc2.connect(gain);
     gain.connect(masterGain);
-
+    
     osc1.start(now);
     osc2.start(now);
-
+    
+    // Schedule stop
     osc1.stop(now + 1.5);
     osc2.stop(now + 1.5);
-
+    
+    // Clean up
     setTimeout(() => {
       try {
         osc1.disconnect();
@@ -663,10 +598,10 @@ export function playBigWin(amount: number) {
         console.warn('Error cleaning up big win audio:', e);
       }
     }, 2000);
+    
   } catch (e) {
     console.error('Error in playBigWin:', e);
   }
-}
-
+};
 
 // Individual exports for all audio functions
