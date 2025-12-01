@@ -189,14 +189,14 @@ export const loadBigWinSound = async () => {
   }
 
   try {
-    console.log('Loading BigWinSFX.wav...');
+    //console.log('Loading BigWinSFX.wav...');
     const response = await fetch('/BigWinSFX.wav');
-    console.log('BigWinSFX response status:', response.status);
+    //console.log('BigWinSFX response status:', response.status);
     const arrayBuffer = await response.arrayBuffer();
     if (audioCtx) {
       bigWinBuffer = await audioCtx.decodeAudioData(arrayBuffer);
       isBigWinLoaded = true;
-      console.log('BigWinSFX decoded and ready');
+      //console.log('BigWinSFX decoded and ready');
     }
   } catch (error) {
     console.error('Error loading big win sound:', error);
@@ -209,7 +209,7 @@ export const resumeAudioIfNeeded = async () => {
   if (audioCtx && audioCtx.state === 'suspended') {
     try {
       await audioCtx.resume();
-      console.log('AudioContext resumed');
+      //console.log('AudioContext resumed');
     } catch (e) {
       console.warn('Error resuming AudioContext:', e);
     }
@@ -594,13 +594,13 @@ export function playBigWin(amount: number) {
     return;
   }
 
-  console.log('playBigWin called with amount:', amount, 'isBigWinLoaded:', isBigWinLoaded);
+  //console.log('playBigWin called with amount:', amount, 'isBigWinLoaded:', isBigWinLoaded);
 
   try {
     const now = audioCtx.currentTime;
 
     if (isBigWinLoaded && bigWinBuffer) {
-      console.log('Playing BigWinSFX.wav');
+      //console.log('Playing BigWinSFX.wav');
       const src = audioCtx.createBufferSource();
       src.buffer = bigWinBuffer;
 
@@ -625,7 +625,7 @@ export function playBigWin(amount: number) {
       return;
     }
 
-    console.log('BigWinSFX not loaded, falling back to synth');
+    //console.log('BigWinSFX not loaded, falling back to synth');
 
     // Fallback: existing synthesized big win if WAV not available
     const osc1 = audioCtx.createOscillator();

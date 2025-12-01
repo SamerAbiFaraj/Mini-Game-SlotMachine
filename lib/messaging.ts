@@ -6,6 +6,6 @@ export const postToParent = (message: ChildMessage) => {
     // For this portable component, we use "*"
     window.parent.postMessage(message, "*");
   } else {
-    console.log("[Dev:Standalone] Message emitted:", message);
+    //console.log("[Dev:Standalone] Message emitted:", message);
   }
 };

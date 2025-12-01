@@ -95,17 +95,17 @@ export default function App() {
 
   const handleWarp = async() => {
     try {
-      console.log('Warp button clicked, current gameState:', gameState);
+      //console.log('Warp button clicked, current gameState:', gameState);
       if (gameState !== 'idle' && gameState !== 'resolvingWin') {
-        console.log('Warp blocked - gameState:', gameState);
+        //console.log('Warp blocked - gameState:', gameState);
         return;
       }
       if (balance < currentBet) {
-        console.log('Warp blocked - insufficient balance');
+        //console.log('Warp blocked - insufficient balance');
         return;
       }
 
-         console.log('Starting spin...');
+         //console.log('Starting spin...');
     initAudio();               // ensure context & masterGain exist
     await resumeAudioIfNeeded(); // unlock audio on click
     startSpinSound();
@@ -119,7 +119,7 @@ export default function App() {
       statsRef.current.lastActiveAt = new Date().toISOString();
 
       const result = resolveSpin(spinPhase, configRef.current);
-      console.log('Spin result:', result);
+      //console.log('Spin result:', result);
       pendingResultRef.current = result;
 
       setReelsGrid(result.grid);
@@ -131,7 +131,7 @@ export default function App() {
         type: 'SPIN_START',
         payload: { sessionId: sessionId.current, phase: spinPhase, balanceBefore: balance },
       });
-      console.log('Spin started successfully');
+      //console.log('Spin started successfully');
     } catch (error) {
       console.error('Error in handleWarp:', error);
       setGameState('idle');
@@ -175,14 +175,14 @@ export default function App() {
   };
 
   const handleOverlayComplete = useCallback(() => {
-    console.log('Overlay complete, setting game state to idle');
+    //console.log('Overlay complete, setting game state to idle');
     setGameState('idle');
     setLastWin(prev => {
-      console.log('Resetting last win from:', prev);
+      //console.log('Resetting last win from:', prev);
       return 0;
     });
     setLastWinResult(null);
-    console.log('Game state after overlay complete:', 'idle');
+    //console.log('Game state after overlay complete:', 'idle');
   }, []);
 
   const styles = PHASE_STYLES[currentPhase];
@@ -192,7 +192,7 @@ export default function App() {
   const isBigWin = lastWin >= currentBet * 5;
 
   useEffect(() => {
-    console.log('Game state:', gameState, 'Last win:', lastWin, 'Show overlay:', showOverlay);
+    //console.log('Game state:', gameState, 'Last win:', lastWin, 'Show overlay:', showOverlay);
   }, [gameState, lastWin, showOverlay]);
 
   return (

@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import Particles from '@tsparticles/react';
-import { loadSlim } from '@tsparticles/slim';
-import { type ISourceOptions, type Engine } from '@tsparticles/engine';
-import { GamePhase } from '../types';
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import Particles from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
+import type { ISourceOptions, Engine } from "@tsparticles/engine";
+import { GamePhase } from "../types";
 
 interface Props {
   active: boolean;
@@ -14,19 +14,19 @@ const WinParticles: React.FC<Props> = ({ active, phase, isBigWin = false }) => {
   const [loaded, setLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  useEffect(() => {
-    try {
-      loadSlim(async (engine: Engine) => {
+  // tsParticles init callback
+  const particlesInit = useCallback(
+    async (engine: Engine) => {
+      try {
+        await loadSlim(engine);
         setLoaded(true);
-      }).catch((error) => {
-        console.error('Failed to load win particles:', error);
+      } catch (error) {
+        console.error("Failed to load win particles:", error);
         setHasError(true);
-      });
-    } catch (error) {
-      console.error('WinParticles initialization error:', error);
-      setHasError(true);
-    }
-  }, []);
+      }
+    },
+    []
+  );
 
   const options: ISourceOptions = useMemo(() => {
     if (!active || !loaded) {
@@ -35,17 +35,17 @@ const WinParticles: React.FC<Props> = ({ active, phase, isBigWin = false }) => {
 
     const phaseColors = {
       Calm: {
-        primary: '#22d3ee',
-        secondary: '#06b6d4',
+        primary: "#22d3ee",
+        secondary: "#06b6d4",
       },
       Surge: {
-        primary: '#fbbf24',
-        secondary: '#f59e0b',
+        primary: "#fbbf24",
+        secondary: "#f59e0b",
       },
       Quantum: {
-        primary: '#e879f9',
-        secondary: '#d946ef',
-      }
+        primary: "#e879f9",
+        secondary: "#d946ef",
+      },
     };
 
     const colors = phaseColors[phase];
@@ -54,19 +54,19 @@ const WinParticles: React.FC<Props> = ({ active, phase, isBigWin = false }) => {
     return {
       background: {
         color: {
-          value: 'transparent',
+          value: "transparent",
         },
       },
       fpsLimit: 120,
       particles: {
         color: {
-          value: [colors.primary, colors.secondary, '#ffffff'],
+          value: [colors.primary, colors.secondary, "#ffffff"],
         },
         move: {
-          direction: 'top',
+          direction: "top",
           enable: true,
           outModes: {
-            default: 'out',
+            default: "out",
           },
           random: true,
           speed: isBigWin ? 8 : 5,
@@ -89,7 +89,7 @@ const WinParticles: React.FC<Props> = ({ active, phase, isBigWin = false }) => {
           },
         },
         shape: {
-          type: ['star', 'circle'],
+          type: ["star", "circle"],
         },
         size: {
           value: { min: 2, max: isBigWin ? 8 : 5 },
@@ -134,6 +134,7 @@ const WinParticles: React.FC<Props> = ({ active, phase, isBigWin = false }) => {
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-50">
       <Particles
         id="tsparticles-win"
+        init={particlesInit}
         options={options}
         className="absolute inset-0 w-full h-full"
       />

@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
-import Particles from '@tsparticles/react';
-import { loadSlim } from '@tsparticles/slim';
-import { type ISourceOptions, type Engine } from '@tsparticles/engine';
-import { GamePhase } from '../types';
+import React, { useMemo, useCallback } from "react";
+import Particles from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
+import type { ISourceOptions, Engine } from "@tsparticles/engine";
+import { GamePhase } from "../types";
 
 interface Props {
   phase: GamePhase;
@@ -10,40 +10,34 @@ interface Props {
 
 const ParticlesBackground: React.FC<Props> = ({ phase }) => {
   const [hasError, setHasError] = React.useState(false);
-  
-  // Initialize particles engine
-  React.useEffect(() => {
+
+  // Proper tsParticles init callback
+  const particlesInit = useCallback(async (engine: Engine) => {
     try {
-      loadSlim(async (engine: Engine) => {
-        // Particles are loaded and ready
-      }).catch((error) => {
-        console.error('Failed to load particles:', error);
-        setHasError(true);
-      });
+      await loadSlim(engine);
     } catch (error) {
-      console.error('Particles initialization error:', error);
+      console.error("Failed to load particles:", error);
       setHasError(true);
     }
   }, []);
 
   const options: ISourceOptions = useMemo(() => {
-    // Color schemes based on phase
     const phaseColors = {
       Calm: {
-        primary: '#22d3ee', // cyan-400
-        secondary: '#06b6d4', // cyan-500
-        tertiary: '#0891b2'  // cyan-600
+        primary: "#22d3ee",
+        secondary: "#06b6d4",
+        tertiary: "#0891b2",
       },
       Surge: {
-        primary: '#fbbf24', // amber-400
-        secondary: '#f59e0b', // amber-500
-        tertiary: '#d97706'  // amber-600
+        primary: "#fbbf24",
+        secondary: "#f59e0b",
+        tertiary: "#d97706",
       },
       Quantum: {
-        primary: '#e879f9', // fuchsia-400
-        secondary: '#d946ef', // fuchsia-500
-        tertiary: '#c026d3'  // fuchsia-600
-      }
+        primary: "#e879f9",
+        secondary: "#d946ef",
+        tertiary: "#c026d3",
+      },
     };
 
     const colors = phaseColors[phase];
@@ -51,7 +45,7 @@ const ParticlesBackground: React.FC<Props> = ({ phase }) => {
     return {
       background: {
         color: {
-          value: 'transparent',
+          value: "transparent",
         },
       },
       fpsLimit: 120,
@@ -62,7 +56,7 @@ const ParticlesBackground: React.FC<Props> = ({ phase }) => {
           },
           onHover: {
             enable: true,
-            mode: 'grab',
+            mode: "grab",
           },
         },
         modes: {
@@ -82,27 +76,27 @@ const ParticlesBackground: React.FC<Props> = ({ phase }) => {
           color: colors.primary,
           distance: 150,
           enable: true,
-          opacity: phase === 'Quantum' ? 0.4 : 0.2,
+          opacity: phase === "Quantum" ? 0.4 : 0.2,
           width: 1,
         },
         move: {
-          direction: 'none',
+          direction: "none",
           enable: true,
           outModes: {
-            default: 'out',
+            default: "out",
           },
           random: true,
-          speed: phase === 'Quantum' ? 2 : phase === 'Surge' ? 1.5 : 1,
+          speed: phase === "Quantum" ? 2 : phase === "Surge" ? 1.5 : 1,
           straight: false,
         },
         number: {
           density: {
             enable: true,
           },
-          value: phase === 'Quantum' ? 120 : phase === 'Surge' ? 80 : 60,
+          value: phase === "Quantum" ? 120 : phase === "Surge" ? 80 : 60,
         },
         opacity: {
-          value: phase === 'Quantum' ? 0.6 : phase === 'Surge' ? 0.5 : 0.4,
+          value: phase === "Quantum" ? 0.6 : phase === "Surge" ? 0.5 : 0.4,
           animation: {
             enable: true,
             speed: 0.5,
@@ -110,10 +104,10 @@ const ParticlesBackground: React.FC<Props> = ({ phase }) => {
           },
         },
         shape: {
-          type: ['circle', 'triangle'],
+          type: ["circle", "triangle"],
         },
         size: {
-          value: { min: 1, max: phase === 'Quantum' ? 4 : 3 },
+          value: { min: 1, max: phase === "Quantum" ? 4 : 3 },
           animation: {
             enable: true,
             speed: 2,
@@ -136,7 +130,6 @@ const ParticlesBackground: React.FC<Props> = ({ phase }) => {
     };
   }, [phase]);
 
-  // If particles fail to load, return empty div instead of crashing
   if (hasError) {
     return null;
   }
@@ -145,6 +138,7 @@ const ParticlesBackground: React.FC<Props> = ({ phase }) => {
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
       <Particles
         id="tsparticles-background"
+        init={particlesInit}
         options={options}
         className="absolute inset-0 w-full h-full"
       />
