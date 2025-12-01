@@ -13,7 +13,7 @@ import { GameState, GamePhase, ReelGrid, SpinResult, SessionStats, GameConfig } 
 import { getPhaseFromTime, resolveSpin } from './lib/phaseLogic';
 import { postToParent } from './lib/messaging';
 import { PHASE_STYLES } from './constants';
-import { initAudio, playSpinSound, playWin, playBigWin, playAmbience } from './lib/audio'; 
+import { initAudio, startSpinSound, playWin, playBigWin, playAmbience } from './lib/audio'; 
 
 const INITIAL_GRID: ReelGrid = [
   ['cat', 'dog', 'bird'],
@@ -106,7 +106,7 @@ export default function App() {
 
       console.log('Starting spin...');
       initAudio(); 
-      playSpinSound();
+      startSpinSound();
 
       const spinPhase = currentPhase; 
       const bet = currentBet;
@@ -150,6 +150,7 @@ export default function App() {
       statsRef.current.totalWin += result.totalWin;
       setWinOverlayKey(prev => prev + 1); // Force new overlay
       
+      // Always show overlay for wins, but use different animations based on win size
       if (isBig) {
         setGameState('animatingBigWin');
         playBigWin(result.totalWin);
@@ -173,14 +174,32 @@ export default function App() {
     });
   };
 
-  const handleOverlayComplete = () => {
+  const handleOverlayComplete = useCallback(() => {
+    console.log('Overlay complete, setting game state to idle');
+    // Ensure any pending timeouts are cleared
     setGameState('idle');
-  };
+    
+    // Force a re-render to ensure state updates
+    setLastWin(prev => {
+      console.log('Resetting last win from:', prev);
+      return 0;
+    });
+    
+    // Reset the win result
+    setLastWinResult(null);
+    
+    console.log('Game state after overlay complete:', 'idle');
+  }, []);
 
   const styles = PHASE_STYLES[currentPhase];
   // Show overlay if we are in a win state AND we have a win amount > 0
   const showOverlay = (gameState === 'resolvingWin' || gameState === 'animatingBigWin') && lastWin > 0;
   const isBigWin = lastWin >= (currentBet * 5);
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('Game state:', gameState, 'Last win:', lastWin, 'Show overlay:', showOverlay);
+  }, [gameState, lastWin, showOverlay]);
 
   return (
     <div className="relative w-full min-h-[100dvh] bg-black text-white font-body overflow-hidden select-none flex flex-col">
@@ -329,14 +348,16 @@ export default function App() {
               isBigWin={isBigWin}
             />
             <AnimatePresence mode='wait'>
-               {showOverlay && (
+              {showOverlay && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center">
                   <BigWinOverlay 
                     key={winOverlayKey}
                     amount={lastWin} 
                     onComplete={handleOverlayComplete} 
                     isBigWin={isBigWin}
                   />
-               )}
+                </div>
+              )}
             </AnimatePresence>
           </div>
 

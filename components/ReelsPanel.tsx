@@ -5,7 +5,7 @@ import { GameState, LineWin, ReelGrid as ReelGridType, SymbolId, GamePhase } fro
 import SymbolIcon from './SymbolIcon';
 import { SYMBOLS, PHASE_STYLES } from '../constants';
 import { randomInt } from '../lib/rng';
-import { playReelStop } from '../lib/audio';
+import { startSpinSound, stopSpinSound, playReelStop } from '../lib/audio';
 import { getAllImages, incrementSpinCount } from '../lib/imageMapper';
 
 interface Props {
@@ -66,13 +66,23 @@ const ReelColumn = ({
   spinNumber?: number;
 }) => {
   const [status, setStatus] = useState<'static' | 'spinning' | 'stopping'>('static');
+  const [spinComplete, setSpinComplete] = useState(false);
   const [spinSpeed, setSpinSpeed] = useState(1);
   const [spinStartTime, setSpinStartTime] = useState(0);
+  
+  // Ensure targetSymbols is always an array
+  const safeTargetSymbols = Array.isArray(targetSymbols) ? targetSymbols : [];
 
   useEffect(() => {
     if (isSpinning) {
       setStatus('spinning');
+      setSpinComplete(false);
       setSpinSpeed(10); // Fast start
+      
+      // Start the spinning sound
+      if (colIndex === 0) {
+        startSpinSound();
+      }
       
       // Fast spinning phase (600ms)
       const fastPhase = setTimeout(() => {
@@ -94,18 +104,30 @@ const ReelColumn = ({
       
       const timer = setTimeout(() => {
         setStatus('stopping');
-        playReelStop();
+        // Play stop sound for this reel, with null check
+        playReelStop(colIndex === safeTargetSymbols.length - 1); // isLastReel
       }, spinDuration);
-      
+
       return () => {
+        // Clean up timeouts and audio
         clearTimeout(fastPhase);
         clearTimeout(mediumPhase);
         clearTimeout(slowPhase);
         clearTimeout(timer);
+        
+        // Only stop the spin sound if this is the first reel
+        if (colIndex === 0) {
+          try {
+            stopSpinSound();
+          } catch (e) {
+            console.warn('Error stopping spin sound:', e);
+          }
+        }
       };
     } else {
       setStatus('static');
       setSpinSpeed(1);
+      setSpinComplete(true);
     }
   }, [isSpinning, colIndex]);
 
@@ -401,7 +423,7 @@ const ReelsPanel: React.FC<Props> = ({ grid, gameState, wins, currentPhase, onSp
           }}
         >
             
-            <div className="flex h-full w-full px-2 py-2 md:px-3 md:py-3 gap-2 md:gap-3 bg-black/90 items-center justify-center">
+            <div className="grid grid-cols-3 h-full w-full px-2 py-2 md:px-3 md:py-3 gap-2 md:gap-3 bg-black/90">
               {columns.map((colSymbols, i) => (
                 <motion.div
                     key={i}
@@ -466,6 +488,7 @@ const ReelsPanel: React.FC<Props> = ({ grid, gameState, wins, currentPhase, onSp
                   />
                   
                   <div
+                    className="h-full w-full"
                     style={{
                       transform: 'perspective(800px) rotateY(2deg)',
                       transformStyle: 'preserve-3d',

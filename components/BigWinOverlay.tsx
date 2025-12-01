@@ -98,10 +98,10 @@ const BigWinOverlay: React.FC<Props> = ({ amount, onComplete, isBigWin }) => {
       animate="visible"
       exit="exit"
       variants={containerVariants}
-      className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
+      className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
     >
       <motion.div 
-        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/60 backdrop-blur-[4px]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -136,7 +136,7 @@ const BigWinOverlay: React.FC<Props> = ({ amount, onComplete, isBigWin }) => {
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col items-center">
+      <div className="relative z-10 flex flex-col items-center text-center p-8 max-w-4xl w-full">
          <motion.h1 
            className={`font-black italic text-transparent bg-clip-text bg-gradient-to-b ${gradient} drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] filter flex`}
            style={{ 
