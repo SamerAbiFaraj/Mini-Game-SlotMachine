@@ -1,0 +1,5 @@
+{
+  "name": "Copy of RoulettePro Iframe",
+  "description": "High-fidelity European Roulette web application designed for iframe embedding. Features realistic animations, full betting logic, multi-currency support preparation, and a robust postMessage communication layer.",
+  "requestFramePermissions": []
+}

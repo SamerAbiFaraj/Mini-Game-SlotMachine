@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roulette Royale - Neo Glass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Montserrat', 'sans-serif'],
+              display: ['Rajdhani', 'sans-serif'],
+            },
+            colors: {
+              neo: {
+                bg: '#020617', // Slate 950
+                glass: 'rgba(255, 255, 255, 0.05)',
+                border: 'rgba(255, 255, 255, 0.1)',
+                gold: '#E2B659',
+                goldDim: '#856626',
+                accent: '#0EA5E9', // Sky 500
+                felt: '#032F26', // Deep Teal
+              }
+            },
+            animation: {
+              'bounce-short': 'bounceShort 0.3s ease-out 1',
+              'pulse-slow': 'pulseSlow 3s infinite',
+              'float': 'float 6s ease-in-out infinite',
+            },
+            keyframes: {
+              bounceShort: {
+                '0%': { transform: 'translateY(-20px) scale(1.1)', opacity: 0 },
+                '60%': { transform: 'translateY(5px) scale(0.9)', opacity: 1 },
+                '100%': { transform: 'translateY(0) scale(1)', opacity: 1 },
+              },
+              pulseSlow: {
+                '0%, 100%': { opacity: 0.6 },
+                '50%': { opacity: 1 },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              }
+            },
+            backgroundImage: {
+              'noise': "url('https://www.transparenttextures.com/patterns/stardust.png')",
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      /* Glassmorphism Utilities */
+      .glass-panel {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+      }
+      
+      .glass-button {
+        background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+        border-top: 1px solid rgba(255,255,255,0.2);
+        border-bottom: 1px solid rgba(0,0,0,0.2);
+        transition: all 0.2s ease;
+      }
+      .glass-button:hover {
+        background: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      }
+      .glass-button:active {
+        transform: translateY(1px);
+      }
+
+      /* Felt Texture */
+      .felt-texture {
+        background-color: #032F26;
+        background-image: radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 70%), url("https://www.transparenttextures.com/patterns/felt.png");
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-neo-bg text-gray-100 overflow-hidden font-sans antialiased selection:bg-neo-gold selection:text-black">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
